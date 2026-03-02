@@ -47,11 +47,32 @@ class IOOverlay(QWidget):
         self.edit.textChanged.connect(self._on_text_changed)
         
 
-        self.body = QLabel(self)
-        self.body.setVisible(False)
+        self.body = QLabel()
         self.body.setWordWrap(True)
-        self.body.setStyleSheet("color: white;")
+        self.body.setStyleSheet("color: white; background: transparent;")
         self.body.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+
+        self.body_scroll = QScrollArea(self)
+        self.body_scroll.setWidget(self.body)
+        self.body_scroll.setWidgetResizable(True)
+        self.body_scroll.setVisible(False)
+        self.body_scroll.setFrameStyle(QFrame.Shape.NoFrame)
+        self.body_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.body_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.body_scroll.setStyleSheet("""
+            QScrollArea { background: transparent; border: none; }
+            QScrollArea > QWidget > QWidget { background: transparent; }
+            QScrollBar:vertical {
+                background: rgba(255,255,255,30);
+                width: 4px;
+                border-radius: 2px;
+            }
+            QScrollBar::handle:vertical {
+                background: rgba(255,255,255,120);
+                border-radius: 2px;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }
+        """)
         
         self.to_input()
         
@@ -101,7 +122,7 @@ class IOOverlay(QWidget):
         
     def to_input(self):
         self.typing_timer.stop()
-        self.body.setVisible(False)
+        self.body_scroll.setVisible(False)
         self.edit.setEnabled(True)
         self.edit.setVisible(True)
         self.edit.clear()
@@ -113,7 +134,7 @@ class IOOverlay(QWidget):
     def to_output(self, text: str, animate: bool = False):
         self.edit.setEnabled(False)
         self.edit.setVisible(False)
-        self.body.setVisible(True)
+        self.body_scroll.setVisible(True)
 
         self.update_header_text()
         self.layout_children()
@@ -150,8 +171,8 @@ class IOOverlay(QWidget):
         rect = QRect(pad, content_top, w - 2 * pad, content_h)
         if self.edit.isVisible():
             self.edit.setGeometry(rect)
-        if self.body.isVisible():
-            self.body.setGeometry(rect)
+        if self.body_scroll.isVisible():
+            self.body_scroll.setGeometry(rect)
             
     def update_fonts(self):
 
